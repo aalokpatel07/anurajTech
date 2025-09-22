@@ -1,3 +1,43 @@
+// Home page product list element
+const productListElement = document.getElementById("product-list");
+
+// Render all products on the home page with Add to Cart button
+const displayAllProducts = () => {
+  if (!productListElement) return;
+  let html = "";
+  productsArray.forEach((product) => {
+    html += `
+      <div class="product home-product" style="display:inline-block;vertical-align:top;margin:10px;width:220px;border:1px solid #eee;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);background:#fff;">
+        <img src="${product.img}" alt="${product.name}" style="width:100%;height:140px;object-fit:cover;border-radius:6px 6px 0 0;">
+        <div style="padding:12px;">
+          <p style="font-weight:700;font-size:1rem;margin-bottom:4px;">${product.name}</p>
+          <p style="color:#f63a35;font-weight:700;margin-bottom:8px;">$${product.price}</p>
+          <button class="add-to-cart-btn" data-product-id="${product.id}" style="background:#f63a35;color:#fff;padding:8px 16px;border-radius:4px;font-weight:700;cursor:pointer;border:none;">Add to Cart</button>
+        </div>
+      </div>
+    `;
+  });
+  productListElement.innerHTML = html;
+  // Add event listeners for Add to Cart buttons
+  document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-product-id"));
+      const prod = productsArray.find((p) => p.id === id);
+      if (!prod) return;
+      // If already in cart, increase quantity, else add to cart
+      const cartIndex = cart.findIndex((p) => p.id === id);
+      if (cartIndex > -1) {
+        cart[cartIndex].quantity += 1;
+      } else {
+        cart.push({ ...prod, quantity: 1 });
+      }
+      displayProducts();
+      updateTotalPrice();
+      updateTotalQuantity();
+      addEvents();
+    });
+  });
+};
 // elements
 const cartBtn = document.getElementById("cart-btn");
 const cartSidebar = document.getElementById("cart-sidebar");
@@ -33,7 +73,7 @@ const getProducts = async () => {
   productsArray = data.products;
 };
 
-// display products in cart
+// display products in cart (sidebar only)
 const displayProducts = () => {
   let productsHTML = "";
   cart.forEach((product) => {
@@ -63,7 +103,6 @@ const displayProducts = () => {
         </div>
     `;
   });
-
   cartProducts.innerHTML = productsHTML;
 };
 
@@ -155,14 +194,18 @@ const updateNodesArray = () => {
   productsNodeArray = Array.from(productsNodeList);
 };
 
-// update total price
+// update total price (sidebar only)
 const updateTotalPrice = () => {
   const initialTotalPrice = 0;
   const totalPrice = cart.reduce(
     (total, product) => total + product.price * product.quantity,
     initialTotalPrice
   );
-  totalPriceElement.textContent = totalPrice;
+  // Format as currency
+  totalPriceElement.textContent = totalPrice.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
 };
 
 // update total quantity
@@ -189,7 +232,9 @@ const initializeCart = () => {
 
 // after fetching data
 getProducts().then(() => {
-  initializeCart();
+  // Only initialize cart if you want all products in cart by default
+  // initializeCart();
+  displayAllProducts();
   displayProducts();
   updateNodesArray();
   updateTotalPrice();
