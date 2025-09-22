@@ -18,6 +18,8 @@ closeBtn.addEventListener("click", () => {
 /* variables */
 // products data
 let productsArray = [];
+// cart state: array of { id, name, price, img, quantity }
+let cart = [];
 // all products (as NodeList)
 let productsNodeList;
 // all products (as Array)
@@ -31,10 +33,10 @@ const getProducts = async () => {
   productsArray = data.products;
 };
 
-// display products
+// display products in cart
 const displayProducts = () => {
   let productsHTML = "";
-  productsArray.forEach((product) => {
+  cart.forEach((product) => {
     productsHTML += `
         <div id="${product.id}" class="product">
           <div class="details">
@@ -65,87 +67,42 @@ const displayProducts = () => {
   cartProducts.innerHTML = productsHTML;
 };
 
-// remove a product
+// remove a product from cart
 const removeProduct = (trashButton) => {
-  // product to remove
-  const productToRemove = productsNodeArray.find(
-    (product) => product.id === trashButton.dataset.productId
-  );
-
-  // steps:
-  // 1- update products array
-  // 2- update UI
-
-  // remove product from DOM
-  productToRemove.remove();
-  // remove product from products array
-  productsArray = productsArray.filter(
-    (product) => product.id !== parseInt(trashButton.dataset.productId)
-  );
-  // update the Nodes array
+  const productId = parseInt(trashButton.dataset.productId);
+  // remove from cart array
+  cart = cart.filter((product) => product.id !== productId);
+  // update UI
+  displayProducts();
   updateNodesArray();
+  addEvents();
 };
 
-// decrease quantity
+// decrease quantity in cart
 const decreaseQuantity = (decrementButton) => {
-  // product to decrease
-  const productToDecrease = productsNodeArray.find(
-    (product) => product.id === decrementButton.dataset.productId
-  );
-
-  // index of product
-  const productIndex = productsArray.findIndex(
-    (product) => product.id === parseInt(decrementButton.dataset.productId)
-  );
-
-  // steps:
-  // 1- update products array
-  // 2- update UI
-
-  // if quantity is 1, remove the product
-  if (productsArray[productIndex].quantity === 1) {
-    // remove product from DOM
-    productToDecrease.remove();
-    // remove product from products array
-    productsArray = productsArray.filter(
-      (product) => product.id !== parseInt(decrementButton.dataset.productId)
-    );
-    // update the Nodes array
-    updateNodesArray();
+  const productId = parseInt(decrementButton.dataset.productId);
+  const productIndex = cart.findIndex((product) => product.id === productId);
+  if (productIndex === -1) return;
+  if (cart[productIndex].quantity === 1) {
+    // remove from cart
+    cart.splice(productIndex, 1);
+  } else {
+    cart[productIndex].quantity -= 1;
   }
-  // if quantity is greater than 1,
-  else {
-    // update products array
-    productsArray[productIndex].quantity =
-      productsArray[productIndex].quantity - 1;
-    // update quantity element
-    const quantityNumElement = productToDecrease.querySelector(".quantity-num");
-    quantityNumElement.textContent = productsArray[productIndex].quantity;
-  }
+  displayProducts();
+  updateNodesArray();
+  addEvents();
 };
 
-// increase quantity
+// increase quantity in cart
 const increaseQuantity = (incrementButton) => {
-  // product to increase
-  const productToIncrease = productsNodeArray.find(
-    (product) => product.id === incrementButton.dataset.productId
-  );
-
-  // index of product
-  const productIndex = productsArray.findIndex(
-    (product) => product.id === parseInt(incrementButton.dataset.productId)
-  );
-
-  // steps:
-  // 1- update products array
-  // 2- update UI
-
-  // update products array
-  productsArray[productIndex].quantity =
-    productsArray[productIndex].quantity + 1;
-  // update quantity element
-  const quantityNumElement = productToIncrease.querySelector(".quantity-num");
-  quantityNumElement.textContent = productsArray[productIndex].quantity;
+  const productId = parseInt(incrementButton.dataset.productId);
+  const productIndex = cart.findIndex((product) => product.id === productId);
+  if (productIndex === -1) return;
+  cart[productIndex].quantity += 1;
+  displayProducts();
+  updateNodesArray();
+  addEvents();
 };
 
 // add event listeners to elements
@@ -201,26 +158,21 @@ const updateNodesArray = () => {
 // update total price
 const updateTotalPrice = () => {
   const initialTotalPrice = 0;
-
-  const totalPrice = productsArray.reduce(
+  const totalPrice = cart.reduce(
     (total, product) => total + product.price * product.quantity,
     initialTotalPrice
   );
-
   totalPriceElement.textContent = totalPrice;
 };
 
 // update total quantity
 const updateTotalQuantity = () => {
   const initialTotalQuantity = 0;
-
-  const totalQuantity = productsArray.reduce(
+  const totalQuantity = cart.reduce(
     (total, product) => total + product.quantity,
     initialTotalQuantity
   );
-
   totalQuantityElement.textContent = totalQuantity;
-
   // "item" or "items" based on total quantity
   if (totalQuantity === 1) {
     totalQuantityText.textContent = "item";
@@ -229,8 +181,15 @@ const updateTotalQuantity = () => {
   }
 };
 
+// Add a product to cart (for demo, add all products to cart on load)
+const initializeCart = () => {
+  // For demo: add all products to cart with their initial quantity
+  cart = productsArray.map((product) => ({ ...product }));
+};
+
 // after fetching data
 getProducts().then(() => {
+  initializeCart();
   displayProducts();
   updateNodesArray();
   updateTotalPrice();
