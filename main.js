@@ -7,12 +7,12 @@ const displayAllProducts = () => {
   let html = "";
   productsArray.forEach((product) => {
     html += `
-      <div class="product home-product" style="display:inline-block;vertical-align:top;margin:10px;width:220px;border:1px solid #eee;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);background:#fff;">
-        <img src="${product.img}" alt="${product.name}" style="width:100%;height:140px;object-fit:cover;border-radius:6px 6px 0 0;">
-        <div style="padding:12px;">
-          <p style="font-weight:700;font-size:1rem;margin-bottom:4px;">${product.name}</p>
-          <p style="color:#f63a35;font-weight:700;margin-bottom:8px;">$${product.price}</p>
-          <button class="add-to-cart-btn" data-product-id="${product.id}" style="background:#f63a35;color:#fff;padding:8px 16px;border-radius:4px;font-weight:700;cursor:pointer;border:none;">Add to Cart</button>
+      <div class="product home-product">
+        <img src="${product.img}" alt="${product.name}">
+        <div class="product-info">
+          <p class="product-name">${product.name}</p>
+          <p class="product-price">$${product.price}</p>
+          <button class="add-to-cart-btn" data-product-id="${product.id}">Add to Cart</button>
         </div>
       </div>
     `;
